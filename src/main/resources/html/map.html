@@ -21,6 +21,7 @@
         var directionsDisplay;
         var directionsRenderers = [];
         var markers = {};
+        var infoWindows = {};
         var solution = null;
 
         function initialize() {
@@ -113,16 +114,28 @@
                     location = route[j];
                     id = addMarker(location);
                     if (id !== null) {
-                        const marker = markers[id];
-                        const pos =
-                                new google.maps.LatLng(location.x, location.y);
-                        infowindow = new google.maps.InfoWindow();
-                        google.maps.event.addListener(marker, 'click',
-                            infoWindowClickCb(i, j, marker, location));
-                        // drawInfoView(i, j, marker, location);
+                        // createInfoWindow(location, i, j, marker);
                     }
                 }
             }
+        }
+
+        function closeInfoWindows() {
+            Object.keys(infoWindows).forEach(id => {
+                infoWindows[id].close();
+            });
+        }
+
+        function createInfoWindow(location, iRoute, orderIndex) {
+            if (location.id in infoWindows) {
+                return;
+            }
+            const marker = markers[location.id];
+            const pos =
+                    new google.maps.LatLng(location.x, location.y);
+            infoWindows[location.id] = new google.maps.InfoWindow();
+            google.maps.event.addListener(marker, 'click',
+                infoWindowClickCb(iRoute, orderIndex, marker, location));
         }
 
         function infoWindowClickCb(iRoute, orderIndex, marker, location) {
@@ -132,10 +145,14 @@
         }
 
         function drawInfoView(iRoute, orderIndex, marker, location) {
-            infowindow.setContent("<b>Solución " + iRoute +
+            if (!(location.id in infoWindows)) {
+                return;
+            }
+            const iSolucion = Number(iRoute) + 1;
+            infoWindows[location.id].setContent("<b>Solución " + iSolucion +
                     ". Secuencia #" + orderIndex + "</b><br>" +
                     location.nombre);
-            infowindow.open(map, marker);
+            infoWindows[location.id].open(map, marker);
         }
 
         function drawMarkers() {
@@ -163,6 +180,7 @@
         function drawRoute(i, clearAllRoutes) {
             if (clearAllRoutes) {
                 clearDrawnRoutes();
+                closeInfoWindows();
             }
             const color = randomHexColor();
             route = solution[i];
@@ -173,6 +191,8 @@
                 destination = new google.maps.LatLng(location2.x,
                                                      location2.y);
                 calcRoute(origin, destination, true, color);
+                createInfoWindow(location1, i, j);
+                drawInfoView(i, j, markers[location1.id], location1);
             }
         }
 

@@ -59,20 +59,6 @@ public class VRPMapView extends Region {
             }
         });
         getChildren().add(browser);
-
-//
-//        VRPProblem problem;
-//        VRPAlgorithm algorithm;
-//        ArrayList<Locacion> check;
-//        int i, j;
-//
-//        //problem = new VRPProblem("datasets/CVRP/augerat/A/A-n80-k10.vrp");
-//        Vehiculo.Tipo vehiculoTipo = new Vehiculo.Tipo("Foo", 100);
-//        problem = new VRPProblem(16, -12.0431800, -77.0282400, 10000, vehiculoTipo);
-//        algorithm = new VRPAlgorithm(problem);
-//
-//
-//        solution = algorithm.solve();
     }
 
     /**
