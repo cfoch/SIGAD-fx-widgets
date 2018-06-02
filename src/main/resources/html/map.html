@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas { height: 100% }
+    </style>
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuwWY5-875b_CNPq45NX1id5BuVVItz0A&sensor=false">
+    </script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        const ICON_MARKER_CUSTOMER = "../img/markers/customer.png";
+        const ICON_MARKER_DEPOT = "../img/markers/depot.png";
+
+        var map;
+        var directionsService;
+        var directionsDisplay;
+        var directionsRenderers = [];
+        var markers = {};
+        var solution = null;
+
+        function initialize() {
+            directionsService = new google.maps.DirectionsService();
+            var mapOptions = {
+                center: new google.maps.LatLng(0, -180),
+                zoom: 8,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            map = new google.maps.Map(document.getElementById("map_canvas"),
+                mapOptions);
+        }
+
+        function renderDirections(result, color) {
+            const opts = {
+                polylineOptions: {
+                    strokeColor: color
+                }
+            };
+            const directionsRenderer = new google.maps.DirectionsRenderer(opts);
+            directionsRenderer.setMap(map);
+            directionsRenderer.setDirections(result);
+            directionsRenderers.push(directionsRenderer);
+        }
+
+        function createRouteRequest(origin, destination) {
+            let request;
+            let originStr, destinationStr;
+            originStr = new google.maps.LatLng(origin.lat().toString(),
+                origin.lng().toString());
+            destinationStr = new google.maps.LatLng(
+                destination.lat().toString(), destination.lng().toString());
+            request = {
+                origin: originStr,
+                destination: destinationStr,
+                travelMode: 'DRIVING'
+            };
+            return request;
+        }
+
+        function calcRoute(origin, destination, draw, color) {
+            var request = createRouteRequest(origin, destination);
+            directionsService.route(request, function(result, status) {
+                if (status == 'OK') {
+                    if (draw) {
+                        renderDirections(result, color);
+                    }
+                }
+            });
+        }
+
+        function setSolution(aSolution) {
+            solution = aSolution;
+        }
+
+        function addMarker(location) {
+            let icon;
+
+            if (!(location.id in markers)) {
+                const position =
+                        new google.maps.LatLng(location.x, location.y);
+
+                if (location.tipo === "DEPOSITO")
+                    icon = ICON_MARKER_DEPOT;
+                else
+                    icon = ICON_MARKER_CUSTOMER;
+
+                const marker = new google.maps.Marker({
+                    position: position,
+                    icon: icon,
+                    draggable: false,
+                    map: map,
+                    title: location.nombre
+                });
+                markers[location.id] = marker;
+                return location.id;
+            }
+            return null;
+        }
+
+        function createMarkers() {
+            let route, location;
+            let i, j;
+            let marker;
+            clearMarkers();
+            for (i = 0; i < solution.length; i++) {
+                route = solution[i];
+                for (j = 0; j < route.length; j++) {
+                    let id;
+                    location = route[j];
+                    id = addMarker(location);
+                    if (id !== null) {
+                        const marker = markers[id];
+                        const pos =
+                                new google.maps.LatLng(location.x, location.y);
+                        infowindow = new google.maps.InfoWindow();
+                        google.maps.event.addListener(marker, 'click',
+                            infoWindowClickCb(i, j, marker, location));
+                        // drawInfoView(i, j, marker, location);
+                    }
+                }
+            }
+        }
+
+        function infoWindowClickCb(iRoute, orderIndex, marker, location) {
+            return function () {
+                drawInfoView(iRoute, orderIndex, marker, location);
+            }
+        }
+
+        function drawInfoView(iRoute, orderIndex, marker, location) {
+            infowindow.setContent("<b>Solución " + iRoute +
+                    ". Secuencia #" + orderIndex + "</b><br>" +
+                    location.nombre);
+            infowindow.open(map, marker);
+        }
+
+        function drawMarkers() {
+            Object.keys(markers).forEach(id => {
+                marker = markers[id];
+                marker.map = map;
+            });
+        }
+
+        function clearMarkers() {
+            Object.keys(markers).forEach(id => {
+                marker = markers[id];
+                marker.map = null;
+            });
+            markers = {};
+        }
+
+        function clearDrawnRoutes() {
+            directionsRenderers.forEach(renderer => {
+                renderer.setMap(null);
+            });
+            directionsRenderers = [];
+        }
+
+        function drawRoute(i, clearAllRoutes) {
+            if (clearAllRoutes) {
+                clearDrawnRoutes();
+            }
+            const color = randomHexColor();
+            route = solution[i];
+            for (j = 0; j < route.length - 1; j++) {
+                location1 = route[j];
+                location2 = route[j + 1];
+                origin = new google.maps.LatLng(location1.x, location1.y);
+                destination = new google.maps.LatLng(location2.x,
+                                                     location2.y);
+                calcRoute(origin, destination, true, color);
+            }
+        }
+
+        function drawSolution() {
+            let i, j;
+            let location1, location2;
+            let origin, destination;
+            for (i = 0; i < solution.length; i++) {
+                const color = randomHexColor();
+                drawRoute(i, false);
+            }
+        }
+
+        function randomHexColor() {
+            return '#' + Math.random().toString(16).substr(-6);
+        }
+    </script>
+  </head>
+  <body onload="initialize()">
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+  </body>
+</html>
