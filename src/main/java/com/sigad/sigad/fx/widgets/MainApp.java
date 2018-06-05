@@ -1,11 +1,16 @@
 package com.sigad.sigad.fx.widgets;
 
+import java.io.InputStream;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.loader.SchemaLoader;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 
 /**
@@ -29,6 +34,12 @@ public class MainApp extends Application {
         stage.setTitle("JavaFX and Maven");
         stage.setScene(scene);
         stage.show();
+
+        try (InputStream inputStream = getClass().getResourceAsStream("/com/sigad/sigad/fx/widgets/map/location.json.schema")) {
+          JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
+          Schema schema = SchemaLoader.load(rawSchema);
+          schema.validate(new JSONObject("{\"hello\" : \"world\"}")); // throws a ValidationException if this object is invalid
+        }
     }
 
     /**
