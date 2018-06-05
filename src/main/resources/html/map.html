@@ -149,9 +149,21 @@
                 return;
             }
             const iSolucion = Number(iRoute) + 1;
-            infoWindows[location.id].setContent("<b>Solución " + iSolucion +
-                    ". Secuencia #" + orderIndex + "</b><br>" +
-                    location.nombre);
+            let content = "<b>Solución " + iSolucion + ". Secuencia #" +
+                    orderIndex + "</b><br>" + location.nombre + "<br>";
+            if ("extra" in location) {
+                let iField;
+                const extra = location.extra;
+                console.log('extra: ' );
+                console.log(JSON.stringify(extra));
+                console.log(extra.length);
+                for (iField = 0; iField < extra.length; iField++) {
+                    const item = extra[iField];
+                    content += "<b>" + item.field + ": </b>" + item.value +
+                            "<br>";
+                }
+            }
+            infoWindows[location.id].setContent(content);
             infoWindows[location.id].open(map, marker);
         }
 

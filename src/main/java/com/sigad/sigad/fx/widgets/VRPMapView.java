@@ -5,16 +5,19 @@
  */
 package com.sigad.sigad.fx.widgets;
 
-import com.google.gson.Gson;
-import com.grupo1.simulated_annealing.Locacion;
 import com.sun.javafx.webkit.WebConsoleListener;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.scene.layout.Region;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import org.jgrapht.graph.GraphWalk;
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.loader.SchemaLoader;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 /**
  * VRPMapView
@@ -24,6 +27,8 @@ import org.jgrapht.graph.GraphWalk;
  */
 public class VRPMapView extends Region {
     private static final String DEFAULT_URL = "/html/map.html";
+    private static final String SCHEMA_URL =
+            "/com/sigad/sigad/fx/widgets/map/solution.json.schema";
 
     private static final String CONSOLE_LOG_TMPL = "Console: [%s:%d] %s";
 
@@ -35,7 +40,7 @@ public class VRPMapView extends Region {
 
     private WebView browser;
     private WebEngine webEngine;
-    private ArrayList<GraphWalk> solution;
+    private String solution;
 
     public VRPMapView() {
         URL url;
@@ -64,60 +69,72 @@ public class VRPMapView extends Region {
     /**
      * @return the solution
      */
-    public ArrayList<GraphWalk> getSolution() {
+    public String getSolution() {
         return solution;
     }
 
     /**
-     * @param solution the solution to set
+     * @param solution the solution to set in JSON format according
+     *      the solution.json.schema.
+     * @return true si la solución es válida, de lo contrario false.
      */
-    public void setSolution(ArrayList<GraphWalk> solution) {
+    public boolean setSolution(String solution) {
+        boolean valid;
+        Class cls = getClass();
+        System.out.println(solution);
         this.solution = solution;
+        try (InputStream inputStream = cls.getResourceAsStream(SCHEMA_URL)) {
+            JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
+            Schema schema = SchemaLoader.load(rawSchema);
+            System.out.println("JSON SCHEMA LOADED");
+            schema.validate(new JSONArray(solution));
+        } catch (Exception ex) {
+            Logger.getLogger(VRPMapView.class.getName()).log(Level.SEVERE, null, ex);
+
+            this.solution = null;
+        }
+        if (this.solution != null) {
+            String script;
+            script = String.format(SCRIPT_TEMPL_SET_SOLUTION, solution);
+            System.out.println(script);
+            getWebEngine().executeScript(script);
+        }
+        return this.solution != null;
     }
 
     public void createMarkers() {
+        if (this.solution == null) {
+            return;
+        }
         getWebEngine().executeScript(SCRIPT_CREATE_MARKERS);
     }
 
     public void drawMarkers() {
+        if (this.solution == null) {
+            return;
+        }
         getWebEngine().executeScript(SCRIPT_DRAW_MARKERS);
     }
 
     public void drawRoute(int i, boolean clear) {
+        if (this.solution == null) {
+            return;
+        }
         getWebEngine().executeScript(
                 String.format(SCRIPT_DRAW_ROUTE, i, "true"));
     }
 
     public void drawSolution() {
+        if (this.solution == null) {
+            return;
+        }
         getWebEngine().executeScript(SCRIPT_DRAW_SOLUTION);
     }
 
-    public void setupSolution() {
-        int i, j;
-        String marshalledSolution, script;
-        Gson gson = new Gson();
-        ArrayList<ArrayList<Locacion>> pojoSolution = new ArrayList<>();
-        for (i = 0; i < solution.size(); i++) {
-            GraphWalk walk;
-            List<Locacion> locaciones;
-            ArrayList<Locacion> pojoRoute = new ArrayList<Locacion>();
-            locaciones = solution.get(i).getVertexList();
-
-            for (j = 0; j < locaciones.size(); j++) {
-                Locacion locacion = locaciones.get(j);
-                Locacion pojoLocacion = new Locacion (locacion.getId(),
-                        locacion.getNombre(), locacion.getTipo(),
-                        locacion.getX(), locacion.getY());
-                pojoRoute.add(pojoLocacion);
-            }
-            pojoSolution.add(pojoRoute);
-        }
-        marshalledSolution = gson.toJson(pojoSolution);
-        script = String.format(SCRIPT_TEMPL_SET_SOLUTION, marshalledSolution);
-        getWebEngine().executeScript(script);
-    }
-
     public void renderSolution() {
+        if (this.solution == null) {
+            return;
+        }
         getWebEngine().executeScript(SCRIPT_DRAW_SOLUTION);
     }
 
