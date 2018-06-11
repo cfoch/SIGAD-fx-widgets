@@ -131,11 +131,6 @@
         </plugins>
     </build>
     <dependencies>
-        <dependency>
-            <groupId>com.grupo1</groupId>
-            <artifactId>SimulatedAnnealing</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
