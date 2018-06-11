@@ -152,12 +152,11 @@
             <artifactId>org.everit.json.schema</artifactId>
             <version>1.8.0</version>
         </dependency>
-<!--         https://mvnrepository.com/artifact/org.json/json 
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20180130</version>
-        </dependency>-->
+	<dependency>
+	    <groupId>com.github.cfoch</groupId>
+	    <artifactId>Simulated_Annealing_Algorithm</artifactId>
+	    <version>1.0</version>
+	</dependency>
     </dependencies>
     <repositories>
         <repository>
