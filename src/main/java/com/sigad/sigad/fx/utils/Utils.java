@@ -39,4 +39,30 @@ public class Utils {
         marshalledSolution = gson.toJson(pojoSolution);
         return marshalledSolution;
     }
+
+    public static String marshallLocationSolution(
+            List<List<Locacion>> solution) {
+        int i, j;
+        String marshalledSolution, script;
+        Gson gson = new Gson();
+        ArrayList<ArrayList<Locacion>> pojoSolution = new ArrayList<>();
+
+        for (i = 0; i < solution.size(); i++) {
+            GraphWalk walk;
+            List<Locacion> locaciones;
+            ArrayList<Locacion> pojoRoute = new ArrayList<Locacion>();
+            locaciones = solution.get(i);
+
+            for (j = 0; j < locaciones.size(); j++) {
+                Locacion locacion = locaciones.get(j);
+                Locacion pojoLocacion = new Locacion (locacion.getId(),
+                        locacion.getNombre(), locacion.getTipo(),
+                        locacion.getX(), locacion.getY());
+                pojoRoute.add(pojoLocacion);
+            }
+            pojoSolution.add(pojoRoute);
+        }
+        marshalledSolution = gson.toJson(pojoSolution);
+        return marshalledSolution;
+    }
 }
