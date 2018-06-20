@@ -38,6 +38,7 @@
         function renderDirections(result, color) {
             const opts = {
                 polylineOptions: {
+                    geodesic: true,
                     strokeColor: color
                 }
             };
@@ -150,7 +151,14 @@
             }
             const iSolucion = Number(iRoute) + 1;
             let content = "<b>Solución " + iSolucion + ". Secuencia #" +
-                    orderIndex + "</b><br>" + location.nombre + "<br>";
+                    orderIndex + "</b><br>";
+            if (location.tipo === "DEPOSITO") {
+                content += "Tienda #" + location.id + "<br>";
+            } else {
+                content += "Pedido #" + location.id + "<br>";
+            }
+            content += "Latitud: " + location.x + "<br>";
+            content += "Longitud " + location.y + "<br>";
             if ("extra" in location) {
                 let iField;
                 const extra = location.extra;
@@ -176,8 +184,8 @@
 
         function clearMarkers() {
             Object.keys(markers).forEach(id => {
-                marker = markers[id];
-                marker.map = null;
+                const marker = markers[id];
+                marker.setMap(null);
             });
             markers = {};
         }

@@ -37,6 +37,7 @@ public class VRPMapView extends Region {
     private static final String SCRIPT_DRAW_ROUTE = "drawRoute(%d,%s)";
     private static final String SCRIPT_DRAW_MARKERS = "drawMarkers()";
     private static final String SCRIPT_CREATE_MARKERS = "createMarkers()";
+    private static final String SCRIPT_CLEAR_MARKERS = "clearMarkers()";
 
     private WebView browser;
     private WebEngine webEngine;
@@ -100,6 +101,13 @@ public class VRPMapView extends Region {
             getWebEngine().executeScript(script);
         }
         return this.solution != null;
+    }
+
+    public void clearMarkers() {
+        if (this.solution == null) {
+            return;
+        }
+        getWebEngine().executeScript(SCRIPT_CLEAR_MARKERS);
     }
 
     public void createMarkers() {
