@@ -14,6 +14,7 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript">
         const ICON_MARKER_CUSTOMER = "../img/markers/customer.png";
+        const PATH_ICON_MARKER_CUSTOMER = "../img/markers/customer/";
         const ICON_MARKER_DEPOT = "../img/markers/depot.png";
 
         var map;
@@ -78,6 +79,20 @@
             solution = aSolution;
         }
 
+        function getExtraObject(location, field) {
+            if ("extra" in location) {
+                let iField;
+                const extra = location.extra;
+                for (iField = 0; iField < extra.length; iField++) {
+                    const item = extra[iField];
+                    if (item.field === field) {
+                        return item;
+                    }
+                }
+            }
+            return null;
+        }
+
         function addMarker(location) {
             let icon;
 
@@ -87,8 +102,15 @@
 
                 if (location.tipo === "DEPOSITO")
                     icon = ICON_MARKER_DEPOT;
-                else
-                    icon = ICON_MARKER_CUSTOMER;
+                else {
+                    let item = this.getExtraObject(location, "Estado");
+                    if (item !== null) {
+                        const filename = item.value + ".png";
+                        icon = PATH_ICON_MARKER_CUSTOMER + filename;
+                    } else {
+                        icon = ICON_MARKER_CUSTOMER;
+                    }
+                }
 
                 const marker = new google.maps.Marker({
                     position: position,
