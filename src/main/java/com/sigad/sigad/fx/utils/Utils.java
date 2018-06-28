@@ -16,6 +16,11 @@ import org.jgrapht.graph.GraphWalk;
  * @author cfoch
  */
 public class Utils {
+    public static final String MAC_OS_X_USER_AGENT =
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) "
+            + "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+            + "Version/11.1.1 Safari/605.1.15";
+
     public static String marshallVRPSolution(ArrayList<GraphWalk> solution) {
         int i, j;
         String marshalledSolution, script;

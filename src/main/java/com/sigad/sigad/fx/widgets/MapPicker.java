@@ -5,6 +5,7 @@
  */
 package com.sigad.sigad.fx.widgets;
 
+import com.sigad.sigad.fx.utils.Utils;
 import com.sun.javafx.webkit.WebConsoleListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -54,10 +55,18 @@ public class MapPicker extends Region {
 
     public MapPicker() {
         URL url;
+        String OS = System.getProperty("os.name");
         url = getClass().getResource(DEFAULT_URL);
 
         browser = new WebView();
         webEngine = browser.getEngine();
+        // FIXME
+        // This is a workaround to avoid issues with fonts in macOS.
+        // I am not sure if lastest versions of macOS may have a different
+        // name rather than 'Mac OS X' (which is the most probable).
+        if (OS.startsWith("Mac OS")) {
+            webEngine.setUserAgent(Utils.MAC_OS_X_USER_AGENT);
+        }
         webEngine.load(url.toString());
         webEngine.setJavaScriptEnabled(true);
 
